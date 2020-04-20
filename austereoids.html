@@ -1,0 +1,101 @@
+<script src="brython_dist.js"></script>
+
+<script src="p5.js"></script>
+<script type="text/python">
+# brython + p5js.org adapted from code from Kiko Correoso
+# with correction from Pierre Quentel
+
+from browser import document, window, alert
+
+# Austereoids ported from https://github.com/JohnEarnest/StoneSoup/blob/master/Austereoids/austereoids.pde
+
+from random import randrange
+from math import pi, sin, cos
+
+class Mobile():
+  def __init__(self):
+    self.px, self.py, self.vx, self.vy = 0, 0, 0, 0
+  
+  def move(self):
+    self.px += self.vx;
+    self.py += self.vy;
+    if (self.px <   0):
+      self.px = 480 
+    if (self.px > 480):
+      self.px =   0
+    if (self.py <   0):
+      self.py = 480
+    if (self.py > 480):
+      self.py =   0
+
+class Rock(Mobile):
+  def __init__(self):
+    self.px = randrange(480);
+    self.py = randrange(480);
+    self.vx = randrange(-2, 2);
+    self.vy = randrange(-2, 2);
+  
+  def move(self):
+    super().move()
+
+class Ship(Mobile):
+  def __init__(self):
+    super().__init__()
+    self.r = -pi /2
+    self.px = 240
+    self.py = 240
+  
+  def move(self):
+    super().move()
+
+rocks = []
+player = Ship()
+
+def sketch(p):
+    def setup():
+        createCanvas(480, 480)
+        background(0)
+        rectMode(CENTER)
+        for x in range(10):
+            rocks.append(Rock())
+
+    def draw():
+        global rocks, player
+        background(0, 0, 0)
+
+        for rock in rocks:
+            rock.move()
+            rect(rock.px, rock.py, 20, 20)
+            if (p.dist(player.px, player.py, rock.px, rock.py) < 15):
+                player = Ship()
+
+        player.move();
+        
+        if p.keyIsPressed:
+          if (p.keyCode == p.LEFT_ARROW):
+            player.r -= .125
+          if (p.keyCode == p.RIGHT_ARROW):
+            player.r += .125
+          if (p.keyCode == p.UP_ARROW):
+            player.vx += .125 * cos(player.r)
+            player.vy += .125 * sin(player.r)
+        
+        p.push()
+        p.translate(player.px, player.py)
+        p.rotate(player.r)
+        p.triangle(5, 0, -5, 10, -5, -10)
+        p.pop()
+
+    p.setup = setup
+    p.draw = draw
+
+    createCanvas = p.createCanvas  
+    background = p.background
+    rectMode = p.rectMode
+    CENTER = p.CENTER
+    rect = p.rect
+
+myp5 = window.p5.new(sketch)
+</script>
+
+<body onload="brython()">
